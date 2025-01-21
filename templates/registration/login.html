@@ -1,0 +1,39 @@
+{% extends "registration/base_registration.html" %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh; margin: 0;">
+  <div class="col-md-6 col-lg-4">
+    <div class="card shadow">
+      <div class="card-body text-center">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="Logo" class="mb-2" style="max-width: 100px;">
+        <h2 class="text-center mb-4">Log In</h2>
+        <form method="post">
+          {% csrf_token %}
+         {% for field in form %}
+          <div class="mb-3 row align-items-center">
+            <label for="{{ field.id_for_label }}" class="col-form-label col-sm-3">
+              {{ field.label }}
+            </label>
+              <div class="col-sm-7 d-flex align-items-center justify-content-center">
+                {{ field }}
+            </div>
+            {% if field.errors %}
+            <div class="text-danger small mt-1 col-sm-12">
+              {{ field.errors }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary w-100">Log In</button>
+        </form>
+        <p class="text-center mt-3">
+          Not a member? <a href="{% url 'signup' %}" class="text-decoration-none">Sign up now!</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
