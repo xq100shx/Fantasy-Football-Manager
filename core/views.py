@@ -5,17 +5,17 @@ from django.http import HttpResponse
 def index(request):
     return render(request, 'core/index.html')
 
-def create_team(request):
-    return HttpResponse("Hello, world. You're at the core create_team.")
+def team(request):
+    return render(request, 'core/team.html')
 
-def edit_team(request):
-    return HttpResponse("Hello, world. You're at the core edit_team.")
+# def edit_team(request):
+#     return HttpResponse("Hello, world. You're at the core edit_team.")
 
 def view_leaderboard(request):
     return HttpResponse("Hello, world. You're at the core view_leaderboard.")
 
-def view_team(request):
-    return HttpResponse("Hello, world. You're at the core view_team.")
+# def view_team(request):
+#     return HttpResponse("Hello, world. You're at the core view_team.")
 
-def profile(request):
-    return HttpResponse("Hello, world. You're at the core profile.")
+# def profile(request):
+#     return HttpResponse("Hello, world. You're at the core profile.")

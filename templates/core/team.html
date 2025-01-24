@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Football Team Editor{% endblock %}
+{% block content %}
+<style>
+  .pitch {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 600px;
+    margin: 20px auto;
+    background: linear-gradient(0deg, #6c964c 50%, #567d39 50%);
+    border: 2px solid #3b5d27;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .player-card {
+    position: absolute;
+    width: 100px;
+    height: 140px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+  }
+
+  .player-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+  }
+
+  .player-card .player-info {
+    padding: 5px;
+  }
+
+  .player-card .player-info p {
+    margin: 0;
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
+    background-image: url('{% static 'core/img/phclub.png' %}'); /* Placeholder for club logo */
+    background-size: 100%; /* Adjust to control how much of the logo is visible */
+    background-position: center; /* Center the logo fragment */
+    color: white; /* Text color to stand out against the logo */
+    text-shadow: 1px 1px 2px black; /* Improve text readability */
+    padding: 5px;
+    border-radius: 4px;
+  }
+</style>
+
+<div class="pitch" id="pitch"></div>
+
+<script>
+  const pitch = document.getElementById('pitch');
+  const formation442 = [
+    { top: '1%', left: '35%' }, { top: '1%', left: '55%' },  // Forwards
+    { top: '26%', left: '10%' }, { top: '26%', left: '35%' }, { top: '26%', left: '55%' }, { top: '26%', left: '80%' }, // Midfielders
+    { top: '51%', left: '10%' }, { top: '51%', left: '35%' }, { top: '51%', left: '55%' }, { top: '51%', left: '80%' }, // Defenders
+    { top: '76%', left: '45%' } // Goalkeeper
+  ];
+
+  function createPlayerCard(name, position,clubLogoUrl) {
+    const card = document.createElement('div');
+    card.classList.add('player-card');
+    card.innerHTML = `
+      <img src="{% static 'core/img/phplayer.jpg' %}" alt="Player">
+      <div class="player-info">
+           <p style="background-image: url('${clubLogoUrl}');">${name}</p>
+      </div>
+      </div>
+    `;
+    card.style.top = position.top;
+    card.style.left = position.left;
+    return card;
+  }
+
+  function renderFormation(formation) {
+    pitch.innerHTML = '';
+    formation.forEach((pos, index) => {
+      const playerCard = createPlayerCard(
+        `Player ${index + 1}`,
+        pos,
+        '{% static 'core/img/phclub.png' %}' // Replace with actual club logo URL
+      );
+      pitch.appendChild(playerCard);
+    });
+  }
+
+  renderFormation(formation442);
+</script>
+{% endblock %}
