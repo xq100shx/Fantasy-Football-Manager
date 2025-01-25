@@ -2,96 +2,275 @@
 {% load static %}
 {% block title %}Football Team Editor{% endblock %}
 {% block content %}
-<style>
-  .pitch {
-    position: relative;
-    width: 100%;
-    max-width: 800px;
-    height: 600px;
-    margin: 20px auto;
-    background: linear-gradient(0deg, #6c964c 50%, #567d39 50%);
-    border: 2px solid #3b5d27;
-    border-radius: 10px;
-    overflow: hidden;
-  }
+    <link rel="stylesheet" href="{% static 'core/css/team.css' %}">
+    <div class="container">
+        <!-- Dropdown to select formation -->
+        <div class="text-center mb-3">
+            <label for="formationSelect" class="form-label">Select Formation:</label>
+            <select class="form-select w-auto mx-auto" id="formationSelect">
+                <option value="4-4-2">4-4-2</option>
+                <option value="4-3-3">4-3-3</option>
+                <option value="3-5-2">3-5-2</option>
+                <option value="5-3-2">5-3-2</option>
+            </select>
+        </div>
 
-  .player-card {
-    position: absolute;
-    width: 100px;
-    height: 140px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: #333;
-    overflow: hidden;
-  }
+        <!-- Responsive Football Pitch -->
+        <div class="pitch mx-auto" id="pitch"></div>
 
-  .player-card img {
-    width: 100%;
-    height: 100px;
-    object-fit: cover;
-  }
+        <!-- Modal for selecting players -->
+        <div class="modal" id="playerModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Select a Player</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control mb-3" id="playerSearch"
+                               placeholder="Search for a player...">
+                        <ul id="playerList" class="list-group"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const pitch = document.getElementById("pitch");
+        const playerModal = document.getElementById("playerModal");
+        const playerSearch = document.getElementById("playerSearch");
+        const playerList = document.getElementById("playerList");
+        const formationSelect = document.getElementById("formationSelect");
+        let selectedCard = null;
 
-  .player-card .player-info {
-    padding: 5px;
-  }
+        // Placeholder for players fetched from the database
+        {#const players = [#}
+        {#  { id: 1, name: "John Doe", photo: "{% static 'core/img/phplayer.jpg' %}" , club: "{% static 'core/img/phclub.png' %}"},#}
+        {#  { id: 2, name: "Jane Smith", photo: "{% static 'core/img/phplayer.jpg' %}", club: "{% static 'core/img/phclub.png' %}"},#}
+        {#  { id: 3, name: "Mike Johnson", photo: "{% static 'core/img/phplayer.jpg' %}", club: "{% static 'core/img/phclub.png' %}"},#}
+        {#];#}
+        const players = {{ players | safe }};
 
-  .player-card .player-info p {
-    margin: 0;
-    word-wrap: break-word;
-    white-space: normal;
-    overflow: hidden;
-    background-image: url('{% static 'core/img/phclub.png' %}'); /* Placeholder for club logo */
-    background-size: 100%; /* Adjust to control how much of the logo is visible */
-    background-position: center; /* Center the logo fragment */
-    color: white; /* Text color to stand out against the logo */
-    text-shadow: 1px 1px 2px black; /* Improve text readability */
-    padding: 5px;
-    border-radius: 4px;
-  }
-</style>
+        // Function to generate formation dynamically
+        function generateFormation(formationRows) {
+            //add the goalkeeper to the formation rows
+            formationRows.unshift(1);
+            const formation = [];
+            const rowHeight = 100 / (formationRows.length + 1); // Divide pitch height evenly
+            formationRows.reverse().forEach((playersInRow, rowIndex) => {
+                const top = rowHeight * (rowIndex + 1); // Calculate vertical placement
+                const colWidth = 100 / (playersInRow + 1); // Distribute players evenly horizontally
+                for (let i = 1; i <= playersInRow; i++) {
+                    formation.push({
+                        top: `${top}%`,
+                        left: `${colWidth * i}%`,
+                    });
+                }
+            });
 
-<div class="pitch" id="pitch"></div>
+            return formation;
+        }
 
-<script>
-  const pitch = document.getElementById('pitch');
-  const formation442 = [
-    { top: '1%', left: '35%' }, { top: '1%', left: '55%' },  // Forwards
-    { top: '26%', left: '10%' }, { top: '26%', left: '35%' }, { top: '26%', left: '55%' }, { top: '26%', left: '80%' }, // Midfielders
-    { top: '51%', left: '10%' }, { top: '51%', left: '35%' }, { top: '51%', left: '55%' }, { top: '51%', left: '80%' }, // Defenders
-    { top: '76%', left: '45%' } // Goalkeeper
-  ];
+        // Function to create a player card
+        function createPlayerCard(name = "", teamName = "", playerPosition, position = {}) {
+            const card = document.createElement("div");
+            card.classList.add("player-card");
+            card.style.top = position.top;
+            card.style.left = position.left;
+            card.innerHTML = `
+            {#<img src="{% static 'core/img/placeholder150x150.png' %}" alt="Player">#}
+            <div class="player-info">
+            {#<p style="background-image: url('${clubLogoUrl}')">${name || "Empty"}</p>#}
+            <p>${playerPosition || "Empty"}</p>
+            <p>${name || "Empty"}</p>
+            <p>${teamName || "Empty"}</p>
+            </div>
+          `;
+            card.addEventListener("click", () => {
+                selectedCard = card;
+                openModal();
+            });
+            return card;
+        }
 
-  function createPlayerCard(name, position,clubLogoUrl) {
-    const card = document.createElement('div');
-    card.classList.add('player-card');
-    card.innerHTML = `
-      <img src="{% static 'core/img/phplayer.jpg' %}" alt="Player">
-      <div class="player-info">
-           <p style="background-image: url('${clubLogoUrl}');">${name}</p>
-      </div>
-      </div>
-    `;
-    card.style.top = position.top;
-    card.style.left = position.left;
-    return card;
-  }
+        // Function to render formation on the pitch
+        function renderFormation(formation) {
+            pitch.innerHTML = "";
+            formation.forEach((pos) => {
+                const playerCard = createPlayerCard("", "", "", pos);
+                pitch.appendChild(playerCard);
+            });
+        }
 
-  function renderFormation(formation) {
-    pitch.innerHTML = '';
-    formation.forEach((pos, index) => {
-      const playerCard = createPlayerCard(
-        `Player ${index + 1}`,
-        pos,
-        '{% static 'core/img/phclub.png' %}' // Replace with actual club logo URL
-      );
-      pitch.appendChild(playerCard);
-    });
-  }
+        // Open modal for player selection
+        function openModal() {
+            playerModal.style.display = "block";
+            playerSearch.value = "";
+            renderPlayerList(players);
+        }
 
-  renderFormation(formation442);
-</script>
+        // Close modal
+        function closeModal() {
+            playerModal.style.display = "none";
+        }
+
+        // Render player list in the modal
+        function renderPlayerList(playerListData) {
+            playerList.innerHTML = "";
+            playerListData.forEach((player) => {
+                const li = document.createElement("li");
+                li.classList.add("list-group-item");
+                li.textContent = player.name;
+                li.addEventListener("click", () => selectPlayer(player));
+                playerList.appendChild(li);
+            });
+        }
+
+        // Select a player and update the card
+        function selectPlayer(player) {
+            if (selectedCard) {
+                {#selectedCard.querySelector("img").src = player.photo;#}
+                {#selectedCard.querySelector(".player-info p").textContent = player.name;#}
+                {#selectedCard.querySelector(".player-info p").style.backgroundImage = `url('${player.club}')`;#}
+                selectedCard.querySelector(".player-info").innerHTML = `
+                  <p>${player.position}</p>
+                  <p>${player.name}</p>
+                  <p>${player.team}</p>
+                `;
+                closeModal();
+            }
+        }
+
+        playerSearch.addEventListener('input', () => {
+            const searchValue = playerSearch.value.toLowerCase();
+            const filteredPlayers = players.filter(player =>
+                player.name.toLowerCase().includes(searchValue)
+            );
+            renderPlayerList(filteredPlayers);
+        });
+        // Handle formation selection change
+        formationSelect.addEventListener("change", () => {
+            const selectedFormation = formationSelect.value;
+            let formation;
+
+            switch (selectedFormation) {
+                case "4-4-2":
+                    formation = generateFormation([4, 4, 2]);
+                    break;
+                case "4-3-3":
+                    formation = generateFormation([4, 3, 3]);
+                    break;
+                case "3-5-2":
+                    formation = generateFormation([3, 5, 2]);
+                    break;
+                case "5-3-2":
+                    formation = generateFormation([5, 3, 2]);
+                    break;
+                default:
+                    formation = generateFormation([4, 4, 2]);
+            }
+
+            renderFormation(formation);
+        });
+
+        // Default formation on page load
+        const defaultFormation = generateFormation([4, 4, 2]);
+        renderFormation(defaultFormation);
+    </script>
 {% endblock %}
+
+{#<style>#}
+{#  .pitch {#}
+{#    position: relative;#}
+{#    width: 100%;#}
+{#    max-width: 800px;#}
+{#    height: 600px;#}
+{#    margin: 20px auto;#}
+{#    background: linear-gradient(0deg, #6c964c 50%, #567d39 50%);#}
+{#    border: 2px solid #3b5d27;#}
+{#    border-radius: 10px;#}
+{#    overflow: hidden;#}
+{#  }#}
+{##}
+{#  .player-card {#}
+{#    position: absolute;#}
+{#    width: 100px;#}
+{#    height: 140px;#}
+{#    background-color: #ffffff;#}
+{#    border-radius: 8px;#}
+{#    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);#}
+{#    text-align: center;#}
+{#    font-family: Arial, sans-serif;#}
+{#    font-size: 14px;#}
+{#    color: #333;#}
+{#    overflow: hidden;#}
+{#  }#}
+{##}
+{#  .player-card img {#}
+{#    width: 100%;#}
+{#    height: 100px;#}
+{#    object-fit: cover;#}
+{#  }#}
+{##}
+{#  .player-card .player-info {#}
+{#    padding: 5px;#}
+{#  }#}
+{##}
+{#  .player-card .player-info p {#}
+{#    margin: 0;#}
+{#    word-wrap: break-word;#}
+{#    white-space: normal;#}
+{#    overflow: hidden;#}
+{#    background-image: url('{% static 'core/img/phclub.png' %}'); /* Placeholder for club logo */#}
+{#    background-size: 100%; /* Adjust to control how much of the logo is visible */#}
+{#    background-position: center; /* Center the logo fragment */#}
+{#    color: white; /* Text color to stand out against the logo */#}
+{#    text-shadow: 1px 1px 2px black; /* Improve text readability */#}
+{#    padding: 5px;#}
+{#    border-radius: 4px;#}
+{#  }#}
+{#</style>#}
+{##}
+{#<div class="pitch" id="pitch"></div>#}
+{##}
+{#<script>#}
+{#  const pitch = document.getElementById('pitch');#}
+{#  const formation442 = [#}
+{#    { top: '1%', left: '35%' }, { top: '1%', left: '55%' },  // Forwards#}
+{#    { top: '26%', left: '10%' }, { top: '26%', left: '35%' }, { top: '26%', left: '55%' }, { top: '26%', left: '80%' }, // Midfielders#}
+{#    { top: '51%', left: '10%' }, { top: '51%', left: '35%' }, { top: '51%', left: '55%' }, { top: '51%', left: '80%' }, // Defenders#}
+{#    { top: '76%', left: '45%' } // Goalkeeper#}
+{#  ];#}
+{##}
+{#  function createPlayerCard(name, position,clubLogoUrl) {#}
+{#    const card = document.createElement('div');#}
+{#    card.classList.add('player-card');#}
+{#    card.innerHTML = `#}
+{#      <img src="{% static 'core/img/phplayer.jpg' %}" alt="Player">#}
+{#      <div class="player-info">#}
+{#           <p style="background-image: url('${clubLogoUrl}');">${name}</p>#}
+{#      </div>#}
+{#      </div>#}
+{#    `;#}
+{#    card.style.top = position.top;#}
+{#    card.style.left = position.left;#}
+{#    return card;#}
+{#  }#}
+{##}
+{#  function renderFormation(formation) {#}
+{#    pitch.innerHTML = '';#}
+{#    formation.forEach((pos, index) => {#}
+{#      const playerCard = createPlayerCard(#}
+{#        `Player ${index + 1}`,#}
+{#        pos,#}
+{#        '{% static 'core/img/phclub.png' %}' // Replace with actual club logo URL#}
+{#      );#}
+{#      pitch.appendChild(playerCard);#}
+{#    });#}
+{#  }#}
+{##}
+{#  renderFormation(formation442);#}
+{#</script>#}

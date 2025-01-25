@@ -1,12 +1,23 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from core.models import Player
+
+
 # Create your views here.
 def index(request):
     return render(request, 'core/index.html')
 
 def team(request):
-    return render(request, 'core/team.html')
+    players = Player.objects.all()
+    context = []
+    for player in players:
+        context.append(player.get_dictionary())
+    #change player imaage to blob
+
+    return render(request, 'core/team.html', {
+        'players': context
+    })
 
 # def edit_team(request):
 #     return HttpResponse("Hello, world. You're at the core edit_team.")
