@@ -1,9 +1,27 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'core/css/index.css' %}">
 
-    <h1>Upcoming matches</h1>
-
+<div class="container-fluid">
+    <h1>Upcoming matches for game week {{ game_week }}</h1>
+    {% for date, matches in grouped_matches.items %}
+    <div class="date-container">
+        <div class="card date col-md-12">{{ date }}</div>
+        <div class="row">
+            {% for match in matches %}
+            <div class="col-md-2">
+                <div class="card {{ match.league_class }}">
+                    <div class="card-body">
+                        <div>{{ match.home_team }} - {{ match.away_team }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

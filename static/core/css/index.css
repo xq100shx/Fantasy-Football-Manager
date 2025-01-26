@@ -1,0 +1,44 @@
+.card {
+    margin: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.card-header {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.card-body {
+    font-size: 1em;
+}
+
+.date-container {
+    margin-bottom: 20px;
+}
+
+.date {
+    font-size: 24px;
+    background: linear-gradient(to right, #3a4142, #364244, #334548);
+    font-weight: bold;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+.premier-league {
+    background-color: darkslategray;
+}
+
+.la-liga {
+    background-color: darkgoldenrod;
+}
+
+.ligue-1 {
+    background-color: steelblue;
+}
+.fußball-bundesliga {
+    background-color: darkred;
+}
+.serie-a{
+    background-color: darkslateblue;
+}
