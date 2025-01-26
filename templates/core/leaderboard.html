@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'core/css/leaderboard.css' %}">
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="text-center my-4">Leaderboard</h1>
+            <div class="table-container">
+                <table class="table  table-hover  text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr class="{% if forloop.counter == 1 %}table-success{% elif forloop.counter == 2 %}table-info{% elif forloop.counter == 3 %}table-primary{% endif %}">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.score }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

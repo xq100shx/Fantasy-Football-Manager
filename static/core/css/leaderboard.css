@@ -1,0 +1,16 @@
+.table-container {
+    max-height: 500px; /* Adjust the height as needed */
+    overflow-y: auto;
+}
+
+.table-container tbody {
+    display: block;
+    max-height: 480px; /* Adjust the height as needed */
+    overflow-y: auto;
+}
+
+.table-container thead, .table-container tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}

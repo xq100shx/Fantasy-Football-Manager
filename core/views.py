@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from core.models import Player, UpcomingMatch
-
+from accounts.models import CustomUser as CustomUser
 
 # Create your views here.
 def index(request):
@@ -38,6 +38,13 @@ def team(request):
         'players': context
     })
 
-def view_leaderboard(request):
-    return HttpResponse("Hello, world. You're at the core view_leaderboard.")
+def leaderboard(request):
+    # We will show here the leaderboard
+    users = CustomUser.objects.all().order_by('score').reverse()
+    context = []
+    for user in users:
+        context.append(user.get_points())
+    return render(request, 'core/leaderboard.html', {
+        'users': context
+    })
 
