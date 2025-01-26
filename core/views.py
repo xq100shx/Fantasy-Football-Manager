@@ -40,10 +40,11 @@ def team(request):
 
 def leaderboard(request):
     # We will show here the leaderboard
-    users = CustomUser.objects.all().order_by('score').reverse()
+    users = CustomUser.objects.all()
     context = []
     for user in users:
         context.append(user.get_points())
+    context = sorted(context, key=lambda k: k['points'], reverse=True)
     return render(request, 'core/leaderboard.html', {
         'users': context
     })
