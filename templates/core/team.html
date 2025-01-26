@@ -4,6 +4,8 @@
 {% block content %}
     <link rel="stylesheet" href="{% static 'core/css/team.css' %}">
     <div class="container-fluid">
+
+
         <!-- Dropdown to select formation -->
         <div class="text-center mb-3">
             <label for="formationSelect" class="form-label">Select Formation:</label>
@@ -33,10 +35,15 @@
                         <ul id="playerList" class="list-group"></ul>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <!-- Alert container for Bootstrap alerts -->
+                        <div id="alertContainer"></div>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="text-center mt-3">
+            <button class="btn btn-primary" onclick="saveSquad()">Save Squad</button>
+            <button class="btn btn-secondary" onclick="enableModalsAndButton()">Edit squad</button>
         </div>
     </div>
     <script>
@@ -46,31 +53,44 @@
         const playerList = document.getElementById("playerList");
         const formationSelect = document.getElementById("formationSelect");
         let selectedCard = null;
-
-        // Placeholder for players fetched from the database
-        {#const players = [#}
-        {#  { id: 1, name: "John Doe", photo: "{% static 'core/img/phplayer.jpg' %}" , club: "{% static 'core/img/phclub.png' %}"},#}
-        {#  { id: 2, name: "Jane Smith", photo: "{% static 'core/img/phplayer.jpg' %}", club: "{% static 'core/img/phclub.png' %}"},#}
-        {#  { id: 3, name: "Mike Johnson", photo: "{% static 'core/img/phplayer.jpg' %}", club: "{% static 'core/img/phclub.png' %}"},#}
-        {#];#}
+        let selectedPlayers = [];
         const players = {{ players | safe }};
 
         // Function to generate formation dynamically
         function generateFormation(formationRows) {
-            //add the goalkeeper to the formation rows
-            formationRows.unshift(1);
             const formation = [];
-            const rowHeight = 120 / (formationRows.length + 1); // Divide pitch height evenly
-            formationRows.reverse().forEach((playersInRow, rowIndex) => {
-                const top = rowHeight * (rowIndex + 1)-10; // Calculate vertical placement
-                const colWidth = 100 / (playersInRow + 1); // Distribute players evenly horizontally
-                for (let i = 1; i <= playersInRow; i++) {
-                    formation.push({
-                        top: `${top}%`,
-                        left: `${colWidth * i}%`,
-                    });
-                }
-            });
+            if (formationRows.length === 3) {
+                const positions = ["GK", "DF", "MF", "FW"].reverse();
+                formationRows.unshift(1); // Add the goalkeeper to the formation rows
+                const rowHeight = 120 / (formationRows.length + 1); // Divide pitch height evenly
+                formationRows.reverse().forEach((playersInRow, rowIndex) => {
+                    const top = rowHeight * (rowIndex + 1) - 10; // Calculate vertical placement
+                    const colWidth = 100 / (playersInRow + 1); // Distribute players evenly horizontally
+                    for (let i = 1; i <= playersInRow; i++) {
+                        formation.push({
+                            top: `${top}%`,
+                            left: `${colWidth * i}%`,
+                            position: positions[rowIndex] || "Unknown" // Assign position based on row index
+                        });
+                    }
+                });
+            } else {
+                const positions = ["GK", "DF", "MF", "MF", "FW"].reverse();
+                formationRows.unshift(1); // Add the goalkeeper to the formation rows
+                const rowHeight = 120 / (formationRows.length + 1); // Divide pitch height evenly
+                formationRows.reverse().forEach((playersInRow, rowIndex) => {
+                    const top = rowHeight * (rowIndex + 1) - 10; // Calculate vertical placement
+                    const colWidth = 100 / (playersInRow + 1); // Distribute players evenly horizontally
+                    for (let i = 1; i <= playersInRow; i++) {
+                        formation.push({
+                            top: `${top}%`,
+                            left: `${colWidth * i}%`,
+                            position: positions[rowIndex] || "Unknown" // Assign position based on row index
+                        });
+                    }
+                });
+            }
+
 
             return formation;
         }
@@ -81,13 +101,14 @@
             card.classList.add("player-card");
             card.style.top = position.top;
             card.style.left = position.left;
+            card.dataset.position = playerPosition;
             card.innerHTML = `
             {#<img src="{% static 'core/img/placeholder150x150.png' %}" alt="Player">#}
             <div class="player-info">
             {#<p style="background-image: url('${clubLogoUrl}')">${name || "Empty"}</p>#}
-            <p>${playerPosition || "Empty"}</p>
-            <p>${name || "Empty"}</p>
-            <p>${teamName || "Empty"}</p>
+            <div>${playerPosition || ""}</div>
+            <div>${name || ""}</div>
+            <div>${teamName || ""}</div>
             </div>
           `;
             card.addEventListener("click", () => {
@@ -101,7 +122,7 @@
         function renderFormation(formation) {
             pitch.innerHTML = "";
             formation.forEach((pos) => {
-                const playerCard = createPlayerCard("", "", "", pos);
+                const playerCard = createPlayerCard("", "", pos.position, pos);
                 pitch.appendChild(playerCard);
             });
         }
@@ -110,7 +131,9 @@
         function openModal() {
             playerModal.style.display = "block";
             playerSearch.value = "";
-            renderPlayerList(players);
+            const position = selectedCard.dataset.position;
+            const filteredPlayers = players.filter(player => player.position.split(',').includes(position));
+            renderPlayerList(filteredPlayers);
         }
 
         // Close modal
@@ -123,29 +146,74 @@
             playerList.innerHTML = "";
             playerListData.forEach((player) => {
                 const li = document.createElement("li");
-                li.classList.add("list-group-item");
-                li.textContent = player.name;
+                li.classList.add("list-group-item", "d-flex", "justify-content-between");
+                li.innerHTML = `<span>${player.name}</span><span>${player.position}</span>`;
                 li.addEventListener("click", () => selectPlayer(player));
                 playerList.appendChild(li);
             });
         }
 
-        // Select a player and update the card
         function selectPlayer(player) {
             if (selectedCard) {
-                selectedCard.querySelector(".player-info").innerHTML = `
-                  <p>${player.position}</p>
-                  <p>${player.name}</p>
-                  <p>${player.team}</p>
-                `;
-                closeModal();
+                // Remove the previous player from the selectedPlayers list (if exists)
+                const previousPlayerId = selectedCard.dataset.playerId;
+                if (previousPlayerId) {
+                    const index = selectedPlayers.findIndex(p => p.id === Number(previousPlayerId));
+                    if (index > -1) {
+                        selectedPlayers.splice(index, 1); // Remove the previous player from the list
+                    }
+                }
+
+                // Check if the new player is not already selected
+                if (!selectedPlayers.some(p => p.id === player.id)) {
+                    // Assign the new player to the card
+                    selectedCard.querySelector(".player-info").innerHTML = `
+                <p>${selectedCard.dataset.position}</p>
+                <p>${player.name}</p>
+                <p>${player.team}</p>
+            `;
+                    // Update the `data-player-id` attribute and save the specific position
+                    selectedCard.dataset.playerId = player.id;
+                    selectedCard.dataset.playerPosition = selectedCard.dataset.position;
+
+                    // Add the new player to the selectedPlayers list with the specific position
+                    selectedPlayers.push({id: player.id, position: selectedCard.dataset.position});
+
+                    closeModal();
+                    console.log("selected players: ", selectedPlayers);
+                } else {
+                    showAlert("Player already selected.");
+                }
+            } else {
+                showAlert("No card selected.");
             }
         }
 
+        function showAlert(message) {
+            const alertContainer = document.getElementById("alertContainer");
+            const alert = document.createElement("div");
+            alert.className = "alert alert-warning alert-dismissible fade show";
+            alert.role = "alert";
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+
+            // Automatically hide the alert after 2 seconds
+            setTimeout(() => {
+                alert.classList.remove("show");
+                alert.classList.add("hide");
+                setTimeout(() => alert.remove(), 500); // Remove the alert from the DOM after the fade-out transition
+            }, 2000);
+        }
+
+        // Render player list in the modal
         playerSearch.addEventListener('input', () => {
             const searchValue = playerSearch.value.toLowerCase();
+            const position = selectedCard.dataset.position;
             const filteredPlayers = players.filter(player =>
-                player.name.toLowerCase().includes(searchValue)
+                player.name.toLowerCase().includes(searchValue) && player.position.split(',').includes(position)
             );
             renderPlayerList(filteredPlayers);
         });
@@ -153,7 +221,9 @@
         formationSelect.addEventListener("change", () => {
             const selectedFormation = formationSelect.value;
             let formation;
-
+            // Clear selectedCard and selectedPlayers
+            selectedCard = null;
+            selectedPlayers = [];
             switch (selectedFormation) {
                 case "4-4-2":
                     formation = generateFormation([4, 4, 2]);
@@ -177,8 +247,124 @@
             renderFormation(formation);
         });
 
-        // Default formation on page load
-        const defaultFormation = generateFormation([4, 4, 2]);
-        renderFormation(defaultFormation);
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function saveSquad() {
+            if (selectedPlayers.length < 11) {
+                alert("Please select 11 players to save the squad.");
+                return;
+            }
+            const formation = formationSelect.value;
+            const squad = {
+                user: {{ request.user.id }}, // Use user ID
+                date: new Date().toISOString().split('T')[0], // Current date
+                score: 0, // Initial score
+                locked: false, // Initial value
+                formation: formation, // Formation
+                players: [] // List of players
+            };
+
+            document.querySelectorAll(".player-card").forEach(card => {
+                const playerId = card.dataset.playerId;
+                const playerPosition = card.dataset.playerPosition;
+                if (playerId) {
+                    squad.players.push({player: playerId,position: playerPosition}); // Add player to the list
+                }
+            });
+
+            fetch('/api/save_squad/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(squad) // Send the correct structure
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Squad saved successfully!");
+                        disableModalsAndButton(); // Disable modals and button after saving
+                    } else {
+                        alert("Failed to save squad.");
+                    }
+                });
+        }
+
+        function checkExistingSquad() {
+            fetch('/api/check_existing_squad/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.hasSquad) {
+                        renderExistingSquad(data.squad);
+                        disableModalsAndButton(); // Disable modals and button if squad exists
+                    }
+                });
+        }
+
+        function disableModalsAndButton() {
+            formationSelect.disabled = true; // Disable formation selection
+            document.querySelectorAll(".player-card").forEach(card => {
+                card.removeEventListener("click", openModal);
+                card.classList.add("disabled"); // Add CSS class to visually disable cards
+            });
+            document.querySelector(".btn-primary").disabled = true; // Disable save button
+        }
+
+        function enableModalsAndButton() {
+            formationSelect.disabled = false; // Enable formation selection
+            document.querySelectorAll(".player-card").forEach(card => {
+                card.addEventListener("click", openModal);
+                card.classList.remove("disabled"); // Remove CSS class to visually
+            });
+            document.querySelector(".btn-primary").disabled = false; // Enable save button
+        }
+
+function renderExistingSquad(squad) {
+    const formation = generateFormation(squad.formation.split('-').map(Number));
+    renderFormation(formation);
+
+    squad.players.forEach(player => {
+        const position = player.position; // Use the saved position directly
+        console.log(squad);
+        const cards = document.querySelectorAll(`.player-card[data-position="${position.trim()}"]`);
+        for (let card of cards) {
+            if (!card.dataset.playerId) { // Check if the card is not occupied
+                card.querySelector(".player-info").innerHTML = `
+                    <p>${position}</p>
+                    <p>${player.name}</p>
+                    <p>${player.team}</p>
+                `;
+                card.dataset.playerId = player.id;
+                break; // Exit the loop once the player is placed
+            }
+        }
+    });
+}
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkExistingSquad();
+            const defaultFormation = generateFormation([4, 4, 2]);
+            renderFormation(defaultFormation);
+        });
     </script>
 {% endblock %}

@@ -44,7 +44,7 @@ def leaderboard(request):
     context = []
     for user in users:
         context.append(user.get_points())
-    context = sorted(context, key=lambda k: k['points'], reverse=True)
+    context = sorted(context, key=lambda k: k['score'], reverse=True)
     return render(request, 'core/leaderboard.html', {
         'users': context
     })

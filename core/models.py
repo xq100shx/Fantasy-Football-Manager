@@ -26,9 +26,12 @@ class Player(models.Model):
     def __str__(self):
         return f'{self.name} - {self.position} - {self.team}'
     def get_surname(self):
-        return self.name.split()[-1]
+        if len(self.name.split()) == 1:
+            return self.name
+        #else return everything but first element
+        return ' '.join(self.name.split()[1:])
     def get_dictionary(self):
-        return {'id': self.id, 'name': self.get_surname(), 'position': self.position, 'team': self.team.name}
+        return {'id': self.id, 'name': self.name, 'position': self.position, 'team': self.team.name}
 
 class UpcomingMatch(models.Model):
     game_week = models.IntegerField()
@@ -48,4 +51,20 @@ class UpcomingMatch(models.Model):
             'league': self.home_team.league.name,
             'league_class': league_class
         }
-#TODO: match stats models which will be updated after the match
+
+class UserSquadPlayer(models.Model):
+    user_squad = models.ForeignKey('UserSquad', on_delete=models.CASCADE)
+    player = models.ForeignKey('Player', on_delete=models.CASCADE)
+    position = models.CharField(max_length=10,default='GK')
+
+class UserSquad(models.Model):
+    #one user can have many squads
+    user = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE)
+    #we need to store date of squad creation
+    date = models.DateField()
+    #we will be adding points to the squad after each match
+    score = models.IntegerField()
+    #before game_week starts we lock the squad so that user can't change it
+    locked = models.BooleanField()
+    #we will be storing the formation of the squad
+    formation = models.CharField(max_length=10,default='4-4-2')
