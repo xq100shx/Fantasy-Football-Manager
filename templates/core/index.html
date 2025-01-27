@@ -6,22 +6,28 @@
 <link rel="stylesheet" href="{% static 'core/css/index.css' %}">
 
 <div class="container-fluid">
-    <h1>Upcoming matches for game week {{ game_week }}</h1>
-    {% for date, matches in grouped_matches.items %}
-    <div class="date-container">
-        <div class="card date col-md-12">{{ date }}</div>
-        <div class="row">
-            {% for match in matches %}
-            <div class="col-md-2">
-                <div class="card {{ match.league_class }}">
-                    <div class="card-body">
-                        <div>{{ match.home_team }} - {{ match.away_team }}</div>
-                    </div>
-                </div>
+    {% for league_id, league_data in grouped_matches.items %}
+        <div class="card league-card">
+            <div class="card-header league-name">
+                {{ league_data.league_name }}
             </div>
-            {% endfor %}
+            <div class="card-body">
+                {% for gw in league_data.game_weeks %}
+                    <h5 class="card-title">Game Week {{ gw.game_week }}</h5>
+                    <p class="card-text">{{ gw.min_date }} - {{ gw.max_date }}</p>
+                    <div class="fixtures">
+                        {% for fixture in gw.fixtures %}
+                            <div class="card fixture-card">
+                                <div class="card-body">
+                                    <p class="card-text">{{ fixture.home_team.name }} - {{ fixture.away_team.name }}</p>
+                                    <p class="card-text">{{ fixture.date }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
     {% endfor %}
 </div>
 {% endblock %}

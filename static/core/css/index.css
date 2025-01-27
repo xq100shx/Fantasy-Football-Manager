@@ -1,44 +1,54 @@
-.card {
-    margin: 5px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+.container-fluid {
+    padding: 20px;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-.card-header {
-    font-size: 1.2em;
+.league-card {
+    margin-bottom: 30px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #ffffff;
+    flex: 1 1 calc(50% - 40px); /* Adjust the width to fit two cards per row */
+    box-sizing: border-box;
+}
+
+.league-name {
+    font-size: 24px;
     font-weight: bold;
+    color: #343a40;
+    padding: 10px;
+    background-color: #007bff;
+    color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .card-body {
-    font-size: 1em;
+    padding: 20px;
 }
 
-.date-container {
-    margin-bottom: 20px;
-}
-
-.date {
-    font-size: 24px;
-    background: linear-gradient(to right, #3a4142, #364244, #334548);
+.card-title {
+    font-size: 18px;
     font-weight: bold;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-}
-.premier-league {
-    background-color: darkslategray;
+    color: #495057;
+    margin-bottom: 10px;
 }
 
-.la-liga {
-    background-color: darkgoldenrod;
+.card-text {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 10px;
 }
 
-.ligue-1 {
-    background-color: steelblue;
+.fixture-card {
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #f8f9fa;
 }
-.fußball-bundesliga {
-    background-color: darkred;
-}
-.serie-a{
-    background-color: darkslateblue;
+
+.fixture-card .card-body {
+    padding: 10px;
 }
