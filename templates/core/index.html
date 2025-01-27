@@ -6,28 +6,53 @@
 <link rel="stylesheet" href="{% static 'core/css/index.css' %}">
 
 <div class="container-fluid">
-    {% for league_id, league_data in grouped_matches.items %}
-        <div class="card league-card">
-            <div class="card-header league-name">
-                {{ league_data.league_name }}
-            </div>
-            <div class="card-body">
-                {% for gw in league_data.game_weeks %}
-                    <h5 class="card-title">Game Week {{ gw.game_week }}</h5>
-                    <p class="card-text">{{ gw.min_date }} - {{ gw.max_date }}</p>
-                    <div class="fixtures">
-                        {% for fixture in gw.fixtures %}
-                            <div class="card fixture-card">
+    <div class="row">
+        {% for league_id, league_data in grouped_matches.items %}
+            <div class="col-md-6">
+                <div class="card mb-3 
+                    {% if league_data.league_name == "Premier League" %}
+                        border-primary
+                    {% elif league_data.league_name == "La Liga" %}
+                                            border-danger
+                    {% elif league_data.league_name == "Serie A" %}
+                                            border-success
+                    {% elif league_data.league_name == "Fußball-Bundesliga" %}
+                                            border-warning
+                    {% elif league_data.league_name == "Ligue 1" %}
+                                            border-info
+                    {% endif %}">
+                    <div class="card-header">
+                        <h5>{{ league_data.league_name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for game_week in league_data.game_weeks %}
+                            <div class="card mb-2">
+                                <div class="card-header">
+                                    <h6>Game Week {{ game_week.game_week }}</h6>
+                                </div>
                                 <div class="card-body">
-                                    <p class="card-text">{{ fixture.home_team.name }} - {{ fixture.away_team.name }}</p>
-                                    <p class="card-text">{{ fixture.date }}</p>
+                                    <div class="row">
+                                        {% for match in game_week.fixtures %}
+                                            <div class="col-md-4">
+                                                <div class="card mb-1 {% if  today  >  match.date  %} bg-success{% endif %}">
+                                                    <div class="card-body">
+                                                        <div>{{ match.date|date:"d/m/Y" }}</div>
+                                                        <div>{{ match.home_team.name }} vs {{ match.away_team.name }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
             </div>
-        </div>
-    {% endfor %}
+            {% if forloop.counter|divisibleby:2 and not forloop.last %}
+                </div><div class="row">
+            {% endif %}
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
