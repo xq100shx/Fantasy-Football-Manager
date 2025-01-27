@@ -168,9 +168,9 @@
                 if (!selectedPlayers.some(p => p.id === player.id)) {
                     // Assign the new player to the card
                     selectedCard.querySelector(".player-info").innerHTML = `
-                <p>${selectedCard.dataset.position}</p>
-                <p>${player.name}</p>
-                <p>${player.team}</p>
+                <div>${selectedCard.dataset.position}</div>
+                <div>${player.name}</div>
+                <div>${player.team}</div>
             `;
                     // Update the `data-player-id` attribute and save the specific position
                     selectedCard.dataset.playerId = player.id;
@@ -297,7 +297,7 @@
                 .then(data => {
                     if (data.success) {
                         alert("Squad saved successfully!");
-                        disableModalsAndButton(); // Disable modals and button after saving
+                        checkExistingSquad()
                     } else {
                         alert("Failed to save squad.");
                     }
@@ -314,6 +314,7 @@
             })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     if (data.hasSquad) {
                         renderExistingSquad(data.squad);
                         disableModalsAndButton(); // Disable modals and button if squad exists
@@ -345,14 +346,25 @@ function renderExistingSquad(squad) {
 
     squad.players.forEach(player => {
         const position = player.position; // Use the saved position directly
-        console.log(squad);
         const cards = document.querySelectorAll(`.player-card[data-position="${position.trim()}"]`);
         for (let card of cards) {
             if (!card.dataset.playerId) { // Check if the card is not occupied
+                const points = player.points || 0;
+                let buttonClass;
+                if (points > 20) {
+                    buttonClass = 'btn btn-success';
+                } else if (points > 10) {
+                    buttonClass = 'btn btn-info';
+                } else if (points > 5) {
+                    buttonClass = 'btn btn-secondary';
+                } else {
+                    buttonClass = 'btn btn-danger';
+                }
                 card.querySelector(".player-info").innerHTML = `
-                    <p>${position}</p>
-                    <p>${player.name}</p>
-                    <p>${player.team}</p>
+                    <div>${position}</div>
+                    <div>${player.name}</div>
+                    <div>${player.team}</div>
+                    <button class="${buttonClass}">${points}</button>
                 `;
                 card.dataset.playerId = player.id;
                 break; // Exit the loop once the player is placed

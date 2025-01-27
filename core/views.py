@@ -3,7 +3,6 @@ import datetime
 from django.shortcuts import render
 from core.models import Player, UpcomingMatch, League
 from accounts.models import CustomUser as CustomUser
-from django.db.models import Min, Max
 
 # Create your views here.
 

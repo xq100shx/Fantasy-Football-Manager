@@ -4,7 +4,7 @@ from core.models import UserSquad, UserSquadPlayer
 class UserSquadPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSquadPlayer
-        fields = ['player', 'position']
+        fields = ['player', 'position','points']
 
 class UserSquadSerializer(serializers.ModelSerializer):
     players = UserSquadPlayerSerializer(many=True)

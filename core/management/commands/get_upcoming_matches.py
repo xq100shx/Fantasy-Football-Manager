@@ -85,13 +85,14 @@ class Command(BaseCommand):
                             date = datetime.strptime(date, '%Y-%m-%d').date()
                             home_team = row.find('td', {'data-stat': 'home_team'}).a.text
                             away_team = row.find('td', {'data-stat': 'away_team'}).a.text
-
+                            league_link = leagues[league]['link']
                             UpcomingMatch.objects.get_or_create(
                                 game_week=game_week,
                                 date=date,
                                 home_team=Team.objects.get(name=home_team),
                                 away_team=Team.objects.get(name=away_team),
-                                league=Team.objects.get(name=home_team).league
+                                league=Team.objects.get(name=home_team).league,
+                                league_link=league_link
                             )
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f'Error processing match data: {e}'))

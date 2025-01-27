@@ -22,7 +22,7 @@ def check_existing_squad(request):
         players = UserSquadPlayer.objects.filter(user_squad=squad).select_related('player')
         squad_data = {
             'formation': squad.formation,
-            'players': [{'id': p.player.id, 'name': p.player.name, 'position': p.position, 'team': p.player.team.name} for p in players]
+            'players': [{'id': p.player.id, 'name': p.player.name, 'position': p.position, 'team': p.player.team.name,'points':p.points} for p in players]
         }
         return Response({'hasSquad': True, 'squad': squad_data})
     return Response({'hasSquad': False})

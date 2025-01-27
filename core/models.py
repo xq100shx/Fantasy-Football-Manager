@@ -39,6 +39,7 @@ class UpcomingMatch(models.Model):
     away_team = models.ForeignKey('Team', related_name='away_team', on_delete=models.CASCADE)
     #we need info about league which will be identified by home_team
     league = models.ForeignKey('League', on_delete=models.CASCADE, default=1)
+    league_link = models.CharField(max_length=100, default='')
     date = models.DateField()
     def __str__(self):
         return f'{self.home_team} vs {self.away_team}'
@@ -53,14 +54,15 @@ class UpcomingMatch(models.Model):
             'league': self.home_team.league.name,
             'league_class': league_class
         }
-    # def mark_as_played(self, date_played):
-    #     played_match = PlayedMatch.objects.create(match=self, date_played=date_played)
-    #     return played_match
+    def mark_as_played(self, date_played):
+        played_match = PlayedMatch.objects.create(match=self, date_played=date_played)
+        return played_match
 
 class UserSquadPlayer(models.Model):
     user_squad = models.ForeignKey('UserSquad', on_delete=models.CASCADE)
     player = models.ForeignKey('Player', on_delete=models.CASCADE)
     position = models.CharField(max_length=10,default='GK')
+    points = models.IntegerField(default=0)
 
 class UserSquad(models.Model):
     #one user can have many squads
@@ -74,27 +76,28 @@ class UserSquad(models.Model):
     #we will be storing the formation of the squad
     formation = models.CharField(max_length=10,default='4-4-2')
 
-# class PlayedMatch(models.Model):
-#     match = models.OneToOneField('UpcomingMatch', on_delete=models.CASCADE)
-#     date_played = models.DateField()
-#
-#     def __str__(self):
-#         return f'Played Match: {self.match}'
-#
-# class PlayerMatchStats(models.Model):
-#     player = models.ForeignKey('Player', on_delete=models.CASCADE)
-#     match = models.ForeignKey('PlayedMatch', on_delete=models.CASCADE)
-#     goals = models.IntegerField(default=0)
-#     assists = models.IntegerField(default=0)
-#     shots_on_target = models.IntegerField(default=0)
-#     tackles = models.IntegerField(default=0)
-#     passes_completed = models.IntegerField(default=0)
-#     successful_dribbles = models.IntegerField(default=0)
-#     yellow_cards = models.IntegerField(default=0)
-#     red_cards = models.IntegerField(default=0)
-#     #goalkiper stats
-#     saves_percentage = models.FloatField(default=0)
-#
-#
-#     def __str__(self):
-#         return f'{self.player} - {self.match}'
+class PlayedMatch(models.Model):
+    match = models.OneToOneField('UpcomingMatch', on_delete=models.CASCADE)
+    date_played = models.DateField()
+    points_awarded = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Played Match: {self.match}'
+
+class PlayerMatchStats(models.Model):
+    player = models.ForeignKey('Player', on_delete=models.CASCADE)
+    match = models.ForeignKey('PlayedMatch', on_delete=models.CASCADE)
+    goals = models.IntegerField(default=0)
+    assists = models.IntegerField(default=0)
+    shots_on_target = models.IntegerField(default=0)
+    tackles = models.IntegerField(default=0)
+    passes_completed = models.IntegerField(default=0)
+    successful_dribbles = models.IntegerField(default=0)
+    yellow_cards = models.IntegerField(default=0)
+    red_cards = models.IntegerField(default=0)
+    #goalkiper stats
+    saves_percentage = models.FloatField(default=0)
+
+
+    def __str__(self):
+        return f'{self.player} - {self.match}'
