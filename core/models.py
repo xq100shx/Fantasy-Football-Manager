@@ -83,6 +83,10 @@ class PlayedMatch(models.Model):
 
     def __str__(self):
         return f'Played Match: {self.match}'
+    def delete(self, *args, **kwargs):
+        # Explicitly delete related PlayerMatchStats before deleting PlayedMatch
+        PlayerMatchStats.objects.filter(match=self).delete()
+        super().delete(*args, **kwargs)
 
 class PlayerMatchStats(models.Model):
     player = models.ForeignKey('Player', on_delete=models.CASCADE)

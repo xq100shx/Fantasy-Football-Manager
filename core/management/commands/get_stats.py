@@ -19,9 +19,9 @@ class Command(BaseCommand):
     help = 'Check upcoming matches and update played matches data'
 
     def handle(self, *args, **kwargs):
-        today = datetime.today().date()
-        #today -1 day
-        today = today.replace(day=today.day - 1)
+        # today = datetime.today().date()
+        #27th of january 2025
+        today = datetime(2025, 1, 27).date()
         today_matches = UpcomingMatch.objects.filter(date__lt=today)
         print(len('today_matches:'), today_matches)
         if not today_matches:

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Leaderboard{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'core/css/leaderboard.css' %}">
 <div class="container">
@@ -17,7 +18,11 @@
                     </thead>
                     <tbody>
                         {% for user in users %}
-                        <tr class="{% if forloop.counter == 1 %}table-success{% elif forloop.counter == 2 %}table-info{% elif forloop.counter == 3 %}table-primary{% endif %}">
+                        <tr class="{% if forloop.counter == 1 %}table-success
+                                   {% elif forloop.counter == 2 %}table-info
+                                   {% elif forloop.counter == 3 %}table-primary
+                                   {% elif user.username == request.user.username %}table-warning
+                                   {% endif %}">
                             <td>{{ forloop.counter }}</td>
                             <td>{{ user.username }}</td>
                             <td>{{ user.score }}</td>

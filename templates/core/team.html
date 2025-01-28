@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Football Team Editor{% endblock %}
+{% block title %}Fantasy Team{% endblock %}
 {% block content %}
     <link rel="stylesheet" href="{% static 'core/css/team.css' %}">
     <div class="container-fluid">
@@ -147,7 +147,7 @@
             playerListData.forEach((player) => {
                 const li = document.createElement("li");
                 li.classList.add("list-group-item", "d-flex", "justify-content-between");
-                li.innerHTML = `<span>${player.name}</span><span>${player.position}</span>`;
+                li.innerHTML = `<span>${player.name}</span><span>${player.team}</span>`;
                 li.addEventListener("click", () => selectPlayer(player));
                 playerList.appendChild(li);
             });
@@ -213,7 +213,8 @@
             const searchValue = playerSearch.value.toLowerCase();
             const position = selectedCard.dataset.position;
             const filteredPlayers = players.filter(player =>
-                player.name.toLowerCase().includes(searchValue) && player.position.split(',').includes(position)
+                (player.name.toLowerCase().includes(searchValue) || player.team.toLowerCase().includes(searchValue)) &&
+                player.position.split(',').includes(position)
             );
             renderPlayerList(filteredPlayers);
         });
@@ -351,12 +352,12 @@ function renderExistingSquad(squad) {
             if (!card.dataset.playerId) { // Check if the card is not occupied
                 const points = player.points || 0;
                 let buttonClass;
-                if (points > 20) {
+                if (points >= 100) {
                     buttonClass = 'btn btn-success';
-                } else if (points > 10) {
+                } else if (points > 50) {
                     buttonClass = 'btn btn-info';
-                } else if (points > 5) {
-                    buttonClass = 'btn btn-secondary';
+                } else if (points > 25) {
+                    buttonClass = 'btn btn-light';
                 } else {
                     buttonClass = 'btn btn-danger';
                 }

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="text-center">About This Site</h1>
+            <p>This site is designed to help users manage their fantasy football squads. Users can create squads, assign players, and track their performance based on real-life match statistics.</p>
+            <h2>Player Points Multipliers</h2>
+            <p>Points for players in your squad are calculated based on their performance in matches. The multipliers for different player positions are as follows:</p>
+            <ul>
+                <li><strong>Goalkeepers (GK):</strong> Points are based on saves percentage.</li>
+                <li><strong>Defenders (DF):</strong> Points are calculated using the following multipliers:
+                    <ul>
+                        <li>Goals: 6 points</li>
+                        <li>Assists: 4 points</li>
+                        <li>Shots on target: 1 point</li>
+                        <li>Tackles: 2 points</li>
+                        <li>Passes completed: 1 point</li>
+                        <li>Successful dribbles: 1 point</li>
+                        <li>Yellow cards: -1 point</li>
+                        <li>Red cards: -3 points</li>
+                    </ul>
+                </li>
+                <li><strong>Midfielders (MF):</strong> Points are calculated using the following multipliers:
+                    <ul>
+                        <li>Goals: 5 points</li>
+                        <li>Assists: 4 points</li>
+                        <li>Shots on target: 1.5 points</li>
+                        <li>Tackles: 1.5 points</li>
+                        <li>Passes completed: 2 points</li>
+                        <li>Successful dribbles: 2 points</li>
+                        <li>Yellow cards: -1 point</li>
+                        <li>Red cards: -3 points</li>
+                    </ul>
+                </li>
+                <li><strong>Forwards (FW):</strong> Points are calculated using the following multipliers:
+                    <ul>
+                        <li>Goals: 7 points</li>
+                        <li>Assists: 5 points</li>
+                        <li>Shots on target: 2 points</li>
+                        <li>Tackles: 1 point</li>
+                        <li>Passes completed: 0.5 points</li>
+                        <li>Successful dribbles: 2 points</li>
+                        <li>Yellow cards: -1 point</li>
+                        <li>Red cards: -3 points</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
