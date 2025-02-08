@@ -6,53 +6,36 @@
 <link rel="stylesheet" href="{% static 'core/css/index.css' %}">
 
 <div class="container-fluid">
-    <div class="row">
-        {% for league_id, league_data in grouped_matches.items %}
-            <div class="col-md-6">
-                <div class="card mb-3 
-                    {% if league_data.league_name == "Premier League" %}
+    {% for league, matches in matches.items %}
+              <div class="card mb-3
+                    {% if league == "Premier League" %}
                         border-primary
-                    {% elif league_data.league_name == "La Liga" %}
+                    {% elif league == "La Liga" %}
                                             border-danger
-                    {% elif league_data.league_name == "Serie A" %}
+                    {% elif league == "Serie A" %}
                                             border-success
-                    {% elif league_data.league_name == "Fußball-Bundesliga" %}
+                    {% elif league == "Fußball-Bundesliga" %}
                                             border-warning
-                    {% elif league_data.league_name == "Ligue 1" %}
+                    {% elif league == "Ligue 1" %}
                                             border-info
                     {% endif %}">
-                    <div class="card-header">
-                        <h5>{{ league_data.league_name }}</h5>
-                    </div>
-                    <div class="card-body">
-                        {% for game_week in league_data.game_weeks %}
-                            <div class="card mb-2">
-                                <div class="card-header">
-                                    <h6>Game Week {{ game_week.game_week }}</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        {% for match in game_week.fixtures %}
-                                            <div class="col-md-4">
-                                                <div class="card mb-1 {% if  today  >  match.date  %} bg-success{% endif %}">
-                                                    <div class="card-body">
-                                                        <div>{{ match.date|date:"d/m/Y" }}</div>
-                                                        <div>{{ match.home_team.name }} vs {{ match.away_team.name }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
+            <div class="card-header"><h1>{{ league }}</h1></div>
+            <div class="card-body">
+                <div class="row">
+                    {% for match in matches %}
+                        <div class="col-md-4">
+                            <div class="card mb-3
+                            {% if match.date <= today  %}
+                                bg-success
+                            {% endif %}">
+                                <div class="card-header">{{ match.date|date:"d/m/Y" }}</div>
+                                <div class="card-body">{{ match.home_team }} - {{ match.away_team }}</div>
                             </div>
-                        {% endfor %}
-                    </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% if forloop.counter|divisibleby:2 and not forloop.last %}
-                </div><div class="row">
-            {% endif %}
-        {% endfor %}
-    </div>
+        </div>
+    {% endfor %}
 </div>
 {% endblock %}

@@ -22,3 +22,13 @@ if __name__ == '__main__':
     main()
 
 #TODO: squad editing
+#TODO: automatic scraping match details
+#TODO: league,team, player info update
+#TODO: cdn for images
+#TODO: repair leaderboard
+#TODO: lazy loading of players in team page + pagination
+#solved: repair index page to show matches in week
+#TODO: add logo to navbar and footer
+#TODO: add email help text
+#TODO: repair signup tooltips
+#TODO: add tests

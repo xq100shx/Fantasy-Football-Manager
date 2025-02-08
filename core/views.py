@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 
 from django.shortcuts import render
 from core.models import Player, UpcomingMatch, League
@@ -7,36 +7,19 @@ from accounts.models import CustomUser as CustomUser
 # Create your views here.
 
 def index(request):
-    today = datetime.date.today()
-    # Get leagues names associated with id
-    leagues = League.objects.all()
-    league_dict = {league.id: league.name for league in leagues}
-
-    # Get the distinct game weeks for each league
-    game_weeks = UpcomingMatch.objects.values('game_week', 'league_id').distinct().order_by('league_id', 'game_week')
-
-    # Prepare the data for rendering
-    grouped_matches = {}
-    for gw in game_weeks:
-        league_id = gw['league_id']
-        league_name = league_dict[league_id]
-        game_week = gw['game_week']
-        if league_id not in grouped_matches:
-            grouped_matches[league_id] = {
-                'league_name': league_name,
-                'game_weeks': []
-            }
-        grouped_matches[league_id]['game_weeks'].append({
-            'game_week': game_week,
-            'fixtures': UpcomingMatch.objects.filter(
-                league_id=league_id,
-                game_week=game_week
-            ).order_by('date')  # Sort by date
-        })
-
+    today = datetime.today()
+    monday = today - timedelta(days=today.weekday())
+    # get all matches in the week
+    matches = UpcomingMatch.objects.filter(date__range=[monday, monday + timedelta(days=6)])
+    # group matches by league
+    leagues = {}
+    for match in matches:
+        if match.league.name not in leagues:
+            leagues[match.league.name] = []
+        leagues[match.league.name].append(match.get_dictionary())
     return render(request, 'core/index.html', {
-        'grouped_matches': grouped_matches,
-        'today': today
+        'matches': leagues,
+        'today': today.date(),
     })
 def team(request):
     players = Player.objects.all()
