@@ -26,7 +26,6 @@ def team(request):
     context = []
     for player in players:
         context.append(player.get_dictionary())
-    #change player imaage to blob
 
     return render(request, 'core/team.html', {
         'players': context,

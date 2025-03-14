@@ -11,7 +11,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         #get matches which date is < today
 
-        day = datetime(2025, 1, 27).date()
+        # day = datetime(2025, 1, 27).date()
+        day = datetime.now().date()
         matches = UpcomingMatch.objects.filter(date__lt=day)
         print("Matches which data can be scrapped: ", matches)
         print("Do you want to continue? [y/n]")

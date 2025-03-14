@@ -1,7 +1,4 @@
-import os
-import re
-from pprint import pprint
-
+import cloudscraper
 import requests
 from django.core.management.base import BaseCommand
 from core.models import UpcomingMatch, Team
@@ -15,10 +12,11 @@ class Command(BaseCommand):
         main_url = 'https://fbref.com'
         url_comps = f'{main_url}/en/comps/'
 
+        scraper = cloudscraper.create_scraper()
         try:
-            response = requests.get(url_comps)
+            response = scraper.get(url_comps)
             response.raise_for_status()
-        except requests.RequestException as e:
+        except cloudscraper.exceptions.CloudflareChallengeError as e:
             self.stdout.write(self.style.ERROR(f'Error fetching URL {url_comps}: {e}'))
             return
 

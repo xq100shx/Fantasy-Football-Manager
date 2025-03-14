@@ -24,6 +24,25 @@ def save_squad(request):
     # If the request method is not POST, return a 405 error
     return Response({'success': False, 'message': 'Invalid method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+@api_view(['PUT'])
+def update_squad(request, squad_id):
+    try:
+        # Retrieve the existing squad by ID
+        squad = UserSquad.objects.get(id=squad_id, user=request.user)
+    except UserSquad.DoesNotExist:
+        return Response({'success': False, 'message': 'Squad not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Deserialize and validate incoming data using the UserSquadSerializer
+    serializer = UserSquadSerializer(squad, data=request.data, partial=True)
+
+    # Check if the data is valid according to the model's requirements
+    if serializer.is_valid():
+        # Save the validated data to the database
+        serializer.save()
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+    # If validation fails, return the error details
+    return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def check_existing_squad(request):

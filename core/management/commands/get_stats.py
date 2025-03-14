@@ -1,17 +1,13 @@
 # core/management/commands/check_matches.py
-import os
 import random
 import re
 import time
-
-import requests
+import cloudscraper
 from django.core.management.base import BaseCommand
 from django.db.models import QuerySet
-from requests.adapters import HTTPAdapter
-from urllib3 import Retry
 
 from core.models import UpcomingMatch, PlayerMatchStats, Player
-from datetime import datetime
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup as bs
 
 
@@ -19,10 +15,11 @@ class Command(BaseCommand):
     help = 'Check upcoming matches and update played matches data'
 
     def handle(self, *args, **kwargs):
-        # today = datetime.today().date()
+        today = datetime.today().date()
         #27th of january 2025
-        today = datetime(2025, 1, 27).date()
-        today_matches = UpcomingMatch.objects.filter(date__lt=today)
+        # today = datetime(2025, 1, 27).date()
+        one_week_ago = today - timedelta(days=7)
+        today_matches = UpcomingMatch.objects.filter(date__gt=one_week_ago, date__lt=today)
         print(len('today_matches:'), today_matches)
         if not today_matches:
             print('No matches today')
@@ -31,27 +28,20 @@ class Command(BaseCommand):
             self.scrap_match_stats(today_matches)
 
     # Funkcja wykonująca request z opóźnieniem
-    def safe_request(self,url, min_delay=6, max_delay=8, retries=3):
-        session = requests.Session()
-        retry = Retry(
-            total=retries,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504]
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
+    def safe_request(self, url, min_delay=6, max_delay=8, retries=3):
+        scraper = cloudscraper.create_scraper()
 
-        try:
-            response = session.get(url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
-            return None
+        for _ in range(retries):
+            try:
+                response = scraper.get(url)
+                response.raise_for_status()
+                time.sleep(random.uniform(min_delay, max_delay))
+                return response
+            except cloudscraper.exceptions.CloudflareChallengeError as e:
+                print(f"Request failed: {e}")
+                time.sleep(random.uniform(min_delay, max_delay))
 
-        # delay = random.uniform(min_delay, max_delay)
-        time.sleep(random.randint(min_delay, max_delay))
-        return response
+        return None
 
     def scrap_match_stats(self, today_matches: QuerySet[UpcomingMatch]):
         base_link = "https://fbref.com"

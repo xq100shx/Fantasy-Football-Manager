@@ -1,9 +1,12 @@
 import base64
 import json
 import os
+import random
 import re
 import time
 from datetime import datetime
+
+import cloudscraper
 import requests
 from django.core.management.base import BaseCommand
 from requests.adapters import HTTPAdapter
@@ -27,27 +30,20 @@ class Command(BaseCommand):
         print(f"Progress saved to {filename}")
 
     # Funkcja wykonująca request z opóźnieniem
-    def safe_request(self,url, min_delay=6, max_delay=8, retries=3):
-        session = requests.Session()
-        retry = Retry(
-            total=retries,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504]
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
+    def safe_request(self, url, min_delay=6, max_delay=8, retries=3):
+        scraper = cloudscraper.create_scraper()
 
-        try:
-            response = session.get(url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
-            return None
+        for _ in range(retries):
+            try:
+                response = scraper.get(url)
+                response.raise_for_status()
+                time.sleep(random.uniform(min_delay, max_delay))
+                return response
+            except cloudscraper.exceptions.CloudflareChallengeError as e:
+                print(f"Request failed: {e}")
+                time.sleep(random.uniform(min_delay, max_delay))
 
-        # delay = random.uniform(min_delay, max_delay)
-        time.sleep(min_delay)
-        return response
+        return None
 
     # Scraper lig i ich linków
     def scrape_leagues(self,data, comps_url):

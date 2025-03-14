@@ -15,6 +15,10 @@
                 <option value="3-5-2">3-5-2</option>
                 <option value="5-3-2">5-3-2</option>
                 <option value="3-4-1-2">3-4-1-2</option>
+                <option value="4-5-1">4-5-1</option>
+                <option value="4-2-3-1">4-2-3-1</option>
+                <option value="4-1-4-1">4-1-4-1</option>
+                <option value="4-3-2-1">4-3-2-1</option>
             </select>
         </div>
 
@@ -44,6 +48,7 @@
         <div class="text-center mt-3">
             <button class="btn btn-primary" onclick="saveSquad()">Save Squad</button>
 {#            <button class="btn btn-secondary" onclick="enableModalsAndButton()">Edit squad</button>#}
+{#            <button class="btn btn-success" id="updateSquadButton" onclick="updateSquad()">Update Squad</button>#}
         </div>
     </div>
     <script>
@@ -241,6 +246,18 @@
                 case "3-4-1-2":
                     formation = generateFormation([3, 4, 1, 2]);
                     break;
+                case "4-5-1":
+                    formation = generateFormation([4, 5, 1]);
+                    break;
+                case "4-2-3-1":
+                    formation = generateFormation([4, 2, 3, 1]);
+                    break;
+                case "4-1-4-1":
+                    formation = generateFormation([4, 1, 4, 1]);
+                    break;
+                case "4-3-2-1":
+                    formation = generateFormation([4, 3, 2, 1]);
+                    break;
                 default:
                     formation = generateFormation([4, 4, 2]);
             }
@@ -303,6 +320,10 @@
                         alert("Failed to save squad.");
                     }
                 });
+            //hide save button and show edit button
+            {#document.querySelector(".btn-primary").hidden = true; // Disable save button#}
+            disableModalsAndSaveSquadButton();
+
         }
 
         function checkExistingSquad() {
@@ -318,18 +339,20 @@
                     console.log(data);
                     if (data.hasSquad) {
                         renderExistingSquad(data.squad);
-                        disableModalsAndButton(); // Disable modals and button if squad exists
+                        disableModalsAndSaveSquadButton(); // Disable modals and button if squad exists
                     }
                 });
         }
 
-        function disableModalsAndButton() {
-            formationSelect.disabled = true; // Disable formation selection
+        function disableModalsAndSaveSquadButton() {
+            formationSelect.hidden = true; // Disable formation selection
+            formationSelect.parentElement.hidden = true; // Hide formation selection
             document.querySelectorAll(".player-card").forEach(card => {
                 card.removeEventListener("click", openModal);
                 card.classList.add("disabled"); // Add CSS class to visually disable cards
             });
-            document.querySelector(".btn-primary").disabled = true; // Disable save button
+            document.querySelector(".btn-primary").hidden = true; // Disable save button
+
         }
 
         function enableModalsAndButton() {
@@ -338,7 +361,6 @@
                 card.addEventListener("click", openModal);
                 card.classList.remove("disabled"); // Remove CSS class to visually
             });
-            document.querySelector(".btn-primary").disabled = false; // Enable save button
         }
 
 function renderExistingSquad(squad) {
@@ -373,11 +395,14 @@ function renderExistingSquad(squad) {
         }
     });
 }
+function updateSquad(){
+    console.log("Updating squad...");
+}
 
-        document.addEventListener("DOMContentLoaded", () => {
-            checkExistingSquad();
-            const defaultFormation = generateFormation([4, 4, 2]);
-            renderFormation(defaultFormation);
-        });
+document.addEventListener("DOMContentLoaded", () => {
+    checkExistingSquad();
+    const defaultFormation = generateFormation([4, 4, 2]);
+    renderFormation(defaultFormation);
+});
     </script>
 {% endblock %}
