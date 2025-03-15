@@ -14,7 +14,7 @@ Measured using [Darkyen's Time Tracker](https://plugins.jetbrains.com/plugin/928
 - Responsive Design: Optimized for both desktop and mobile devices.
 
 ## Technology stack
-- Python: django, requests, beautifulsoup4
+- Python: django, requests, cloudscraper, beautifulsoup4
 - CSS: Bootstrap
 - Javascript
 - HTML
